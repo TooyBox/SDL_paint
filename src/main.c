@@ -228,37 +228,43 @@ void eraser(SDL_Event event, Point cursor) {
 
 void GUI_color_picker(Uint8 vals[3]) {
 	double r = 255.0, g = 255.0, b = 255.0;
-	double my, change[3];
+	double my, mx, change[3];
 	double temp[3];
 
 	int i, j;
 	Uint32 color;
 
+	mx = 255.0 / 80.0;
+	my = 255.0 / 210.0;
+
+
 	for (i = 0; i < 3; i++) {
-		if (vals[i] != 0) {
-			change[i] = 255 / (double) vals[i];
-		} else {
+		if (vals[i] == 255.0) {
 			change[i] = 0;
+		}
+		else if (vals[i] != 0) {
+			change[i] = mx - (vals[i] / 80.0);
+		}
+		else {
+			change[i] = mx; 
 		}
 	}
 
-	my = 255.0 / 210.0;
-
-	for (i = 10; i <= 90; i++) {
+	for (i = 10; i <= 90; i++) {		
 		temp[0] = r;
 		temp[1] = g;
 		temp[2] = b;
-		for (j = 190; j <= 400; j++) {
-			temp[0] = ((temp[0] - my) > 0) ? (temp[0] - my) : (0);
-			temp[1] = ((temp[1] - my) > 0) ? (temp[1] - my) : (0);
-			temp[2] = ((temp[2] - my) > 0) ? (temp[2] - my) : (0);
 
+		for (j = 190; j <= 400; j++) {
 			color = SDL_MapRGB(SDL_GetPixelFormatDetails(USR_Canvas->format), NULL, \
 					(Uint8) temp[0], \
 				       	(Uint8) temp[1], \
 				       	(Uint8) temp[2]);
 			SDL_Rect rect = (SDL_Rect) {i, j, 1, 1};
 			SDL_FillSurfaceRect(USR_Canvas, &rect, color);
+			temp[0] = ((temp[0] - my) > 0) ? (temp[0] - my) : (0);
+			temp[1] = ((temp[1] - my) > 0) ? (temp[1] - my) : (0);
+			temp[2] = ((temp[2] - my) > 0) ? (temp[2] - my) : (0);
 		}
 		r -= change[0];
 		g -= change[1];
@@ -303,10 +309,10 @@ void get_Hovering(SDL_Event event, Point cursor) {
 			}
 			if (cursor.y >= 410 && cursor.y <= 450) {
 				printf("Hue\n");
-				Uint8 *ret = (Uint8*) malloc(sizeof(Uint8) * 3);
+				Uint8 ret[3];
 				color_picker(cursor, ret);
+				printf("Rect: %d, %d, %d\n", ret[0], ret[1], ret[2]);
 				GUI_color_picker(ret);
-				free(ret);
 			}
 		}
 	}
