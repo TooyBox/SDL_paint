@@ -1,4 +1,5 @@
 Requirements to run:
+
   MSYS2 installed
   SDL3 installed in MSYS2 environment
 
