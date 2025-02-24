@@ -25,7 +25,6 @@ typedef enum {
 typedef struct {
 	double x;
 	double y;
-	double z;
 } Point;
 
 typedef struct {
@@ -33,6 +32,7 @@ typedef struct {
 	Uint32 Color;
 	Cursor_type Held;
 	Bounds Hovering;
+	int size;
 } Cursor;
 
 
@@ -171,8 +171,8 @@ void draw_box(Point p1, Point p2, Uint32 color, int size) {
 	if (p1.x == p2.x || p1.y == p2.y) {
 		draw_line(p1, p2, color, size);
 	} else {
-		p3 = (Point) {p2.x, p1.y, 0};
-		p4 = (Point) {p1.x, p2.y, 0};
+		p3 = (Point) {p2.x, p1.y};
+		p4 = (Point) {p1.x, p2.y};
 
 		draw_line(p1, p3, color, size);
 		draw_line(p3, p2, color, size);
@@ -192,12 +192,12 @@ void brush(SDL_Event event, Point cursor) {
 			is_prev = true;
 			prev = cursor;
 		}
-		draw_line(prev, cursor, COLOR_GREEN, 1);
+		draw_line(prev, cursor, C.Color, 2);
 		prev = cursor;
 	}
 	else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 		prev = cursor;
-		draw_point(cursor, COLOR_BLUE, 3);
+		draw_point(cursor, C.Color, 2);
 		is_prev = true;
 	} else { 
 		is_prev = false;
@@ -213,17 +213,76 @@ void eraser(SDL_Event event, Point cursor) {
 			is_prev = true;
 			prev = cursor;
 		}
-		draw_line(prev, cursor, Canv.color, 2);
+		draw_line(prev, cursor, Canv.color, 10);
 		prev = cursor;
 	}
 	else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 		prev = cursor;
-		draw_point(cursor, Canv.color, 3);
+		draw_point(cursor, Canv.color, 10);
 		is_prev = true;
 	} else { 
 		is_prev = false;
 	}
 
+}
+
+void GUI_color_picker(Uint8 vals[3]) {
+	double r = 255.0, g = 255.0, b = 255.0;
+	double my, change[3];
+	double temp[3];
+
+	int i, j;
+	Uint32 color;
+
+	for (i = 0; i < 3; i++) {
+		if (vals[i] != 0) {
+			change[i] = 255 / (double) vals[i];
+		} else {
+			change[i] = 0;
+		}
+	}
+
+	my = 255.0 / 210.0;
+
+	for (i = 10; i <= 90; i++) {
+		temp[0] = r;
+		temp[1] = g;
+		temp[2] = b;
+		for (j = 190; j <= 400; j++) {
+			temp[0] = ((temp[0] - my) > 0) ? (temp[0] - my) : (0);
+			temp[1] = ((temp[1] - my) > 0) ? (temp[1] - my) : (0);
+			temp[2] = ((temp[2] - my) > 0) ? (temp[2] - my) : (0);
+
+			color = SDL_MapRGB(SDL_GetPixelFormatDetails(USR_Canvas->format), NULL, \
+					(Uint8) temp[0], \
+				       	(Uint8) temp[1], \
+				       	(Uint8) temp[2]);
+			SDL_Rect rect = (SDL_Rect) {i, j, 1, 1};
+			SDL_FillSurfaceRect(USR_Canvas, &rect, color);
+		}
+		r -= change[0];
+		g -= change[1];
+		b -= change[2];
+	}
+}
+
+Uint32 color_picker(Point p, Uint8 *ret) {
+	Uint8 val[3];
+	SDL_ReadSurfacePixel(USR_Canvas, \
+			p.x, p.y, \
+			&val[0], \
+		       	&val[1], \
+			&val[2], \
+			NULL);
+	if ( ret != NULL ) {
+		SDL_ReadSurfacePixel(USR_Canvas, \
+			p.x, p.y, \
+			&ret[0], \
+		       	&ret[1], \
+			&ret[2], \
+			NULL);
+	}
+	return SDL_MapSurfaceRGB(USR_Canvas, val[0], val[1], val[2]);
 }
 
 
@@ -238,12 +297,61 @@ void get_Hovering(SDL_Event event, Point cursor) {
 				printf("Eraser\n");
 				C.Held = ERASER;
 			}
+			if (cursor.y >= 190 && cursor.y <= 400) {
+				printf("Color\n");
+				C.Color = color_picker(cursor, NULL);
+			}
+			if (cursor.y >= 410 && cursor.y <= 450) {
+				printf("Hue\n");
+				Uint8 *ret = (Uint8*) malloc(sizeof(Uint8) * 3);
+				color_picker(cursor, ret);
+				GUI_color_picker(ret);
+				free(ret);
+			}
 		}
 	}
 }
 
+
+void set_hue_picker() {
+	Uint32 color;
+
+	int x = 10, y = 410;
+	int i, j, k = 2, factor;
+	
+	double vals[3] = {255.0, 0.0, 0.0};
+	double mx = 80.0 / 3.0;
+
+	for (i = x; i <= 90; i++) {
+		for (j = y; j <= 450; j++) {
+			color = SDL_MapSurfaceRGB(USR_Canvas, (Uint8) vals[0], \
+				       	(Uint8) vals[1], (Uint8) vals[2]);
+			SDL_Rect rect = (SDL_Rect) {i, j, 1, 1};
+			SDL_FillSurfaceRect(USR_Canvas, &rect, color);
+		}
+		if (vals[k%3] <= 0.0) {
+			factor = 1;
+		} 
+		else if (vals[k%3] >= 255.0) { 
+			factor = -1;
+		}
+
+		vals[k%3] += (factor * mx);
+		if (vals[k%3] >= 255.0) {
+			vals[k%3] = 255.0;
+			k++;
+		}
+		else if (vals[k%3] <= 0.0) {
+			vals[k%3] = 0.0;
+			k++;
+		}
+	}
+
+}
+
+
 void mouse_input(SDL_Event event) {
-	Point cursor = (Point) {(double)event.motion.x, (double)event.motion.y, 0};
+	Point cursor = (Point) {(double)event.motion.x, (double)event.motion.y};
 
 	C.Hovering = (cursor.x < 101) ? INTERFACE : CANVAS;
 
@@ -257,55 +365,8 @@ void mouse_input(SDL_Event event) {
 	}
 }
 
-void init_COLOR() {
-	int x = 10, y = 190, h = 400, i, j, k = 0, factor = 1;
-	double vals[] = {0.0, 255.0, 0.0};
-	double r, g, b;
-	Uint32 color;
-
-	double mx = 80.0 / 3.0;
-	double my = 255.0 / 210.0;
-
-	for (i = x; i <= 90; i++) {
-		printf("vals: [%f, %f, %f]\n", vals[0], vals[1], vals[2]);
-		r = vals[0];
-		g = vals[1];
-		b = vals[2];
-		for (j = y; j <= 400; j++) {
-			r = ((r - my) > 0) ? (r - my) : (0);
-			g = ((r - my) > 0) ? (g - my) : (0);
-			b = ((r - my) > 0) ? (b - my) : (0);
-			color = SDL_MapRGB(SDL_GetPixelFormatDetails(USR_Canvas->format), NULL, \
-					(Uint8) r, \
-				       	(Uint8) g, \
-				       	(Uint8) b);
-			SDL_Rect g = (SDL_Rect) {i, j, 1, 1};
-			SDL_FillSurfaceRect(USR_Canvas, &g, color);
-		}
-
-		if (vals[k%3] == 0.0) {
-			factor = 1;
-		} 
-		else { 
-			factor = -1;
-		}
-
-		if (vals[k%3] < 255.0 && vals[k%3] >= 0.0) {
-			vals[k%3] += (factor * mx);
-			if (vals[k%3] > 255.0) {
-				vals[k%3] = 255.0;
-				k++;
-			}
-			if (vals[k%3] < 0.0) {
-				vals[k%3] = 0.0;
-				k++;
-			}
-			continue;
-		}
-	}
-}
-
 void init_GUI() {
+	Uint8 vals[] = {255, 0, 0};
 	Grap = (GUI) {100, 600, 0, 0, COLOR_BLACK};
 	Canv = (Canvas) {799, 600, 101, 0, COLOR_WHITE};
 
@@ -319,7 +380,8 @@ void init_GUI() {
 	SDL_FillSurfaceRect(USR_Canvas, &e, COLOR_RED);	
 	SDL_FillSurfaceRect(USR_Canvas, &c, Canv.color);
 
-	init_COLOR();
+	GUI_color_picker(vals);
+	set_hue_picker();
 
 	SDL_UpdateWindowSurface(window);
 }
@@ -342,7 +404,6 @@ void key_input(SDL_Event event) {
 				C.Held = ERASER;
 				break;
 		}
-
 	}	
 }
 
@@ -350,7 +411,7 @@ void key_input(SDL_Event event) {
 void init_window(const char *name, int w, int h) {
 	SDL_Init(SDL_INIT_VIDEO);
 
-	window = SDL_CreateWindow(name, w, h, SDL_WINDOW_RESIZABLE);
+	window = SDL_CreateWindow(name, w, h, 0x0);
 	USR_Canvas = SDL_GetWindowSurface(window);
 }
 
