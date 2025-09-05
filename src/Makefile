@@ -4,22 +4,41 @@ CPPFLAGS= -g
 
 .PHONY: all clean
 
-CODE=main.c
-OBJS=main.o
+OBJS=$(BUILD_DIR)\main.o $(BUILD_DIR)\model.o $(BUILD_DIR)\draw_functions.o $(BUILD_DIR)\inputs.o $(BUILD_DIR)\gui.o $(BUILD_DIR)\brushes.o
 
-INCLUDE=-Ix86_64-w64-mingw32/include -I.
+INCLUDE=-I.
 
-LIB=-Lx86_64-w64-mingw32/lib -lSDL3 -L.
+LIB=-L. -lSDL3
 
-EXEC= main
+BUILD_DIR=build
+
+EXEC= SDL_Paint
 
 all: $(EXEC)
 
 clean:
-	rm -rf $(EXEC) $(OBJS)
+	rd -r $(EXEC) $(BUILD_DIR)
 
-main.o : main.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c main.c -o main.o $(INCLUDE)
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 $(EXEC): $(OBJS)
 	$(CC) $(OBJS) -o $(EXEC) $(LIB)
+
+$(BUILD_DIR)\main.o : main.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c main.c -o $(BUILD_DIR)\main.o $(INCLUDE)
+
+$(BUILD_DIR)\model.o : model.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c model.c -o $(BUILD_DIR)\model.o $(INCLUDE)
+
+$(BUILD_DIR)\inputs.o : inputs.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c inputs.c -o $(BUILD_DIR)\inputs.o $(INCLUDE)
+
+$(BUILD_DIR)\gui.o : gui.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c gui.c -o $(BUILD_DIR)\gui.o $(INCLUDE)
+
+$(BUILD_DIR)\brushes.o : brushes.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c brushes.c -o $(BUILD_DIR)\brushes.o $(INCLUDE)
+
+$(BUILD_DIR)\draw_functions.o : draw_functions.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c draw_functions.c -o $(BUILD_DIR)\draw_functions.o $(INCLUDE)
