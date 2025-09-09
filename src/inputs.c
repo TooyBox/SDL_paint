@@ -29,6 +29,10 @@ Uint8 *read_from_canvas() {
 	int x = 100, y = 0, i = 0, j = 1, w = 2;
 
 	Uint8 *pixels = malloc(sizeof(Uint8) * CHANNEL_NUM * Canv.W * Canv.H);
+	if (pixels == NULL) {
+		printf("Failed to allocate memory for reading canvas pixels.\n");
+		return NULL;
+	}
 
 	for (y = 0; y < Canv.H; y++) {
 		for (x = 100; x < Canv.W; x++) {
