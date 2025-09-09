@@ -1,8 +1,14 @@
 #include <include/inputs.h>
 #include <include/gui.h>
 #include <include/brushes.h>
+
+#define STBI_MSC_SECURE_CRT
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <include/stb_image_write.h>
+
 #include <string.h>
 #include <stdio.h>
+#define CHANNEL_NUM 3
 
 void mouse_input(SDL_Event event) {
 	Point cursor = (Point) {(double)event.motion.x, (double)event.motion.y};
@@ -19,6 +25,40 @@ void mouse_input(SDL_Event event) {
 	}
 }
 
+Uint8 *read_from_canvas() {
+	int x = 100, y = 0, i = 0, j = 1, w = 2;
+
+	Uint8 *pixels = malloc(sizeof(Uint8) * CHANNEL_NUM * Canv.W * Canv.H);
+
+	for (y = 0; y < Canv.H; y++) {
+		for (x = 100; x < Canv.W; x++) {
+			SDL_ReadSurfacePixel(USR_Canvas, \
+					x, y, \
+					&pixels[i], \
+					&pixels[j], \
+					&pixels[w], \
+					NULL);
+			i += 3; j += 3; w += 3;
+		}
+	}
+	return pixels;
+}
+
+
+void save_canvas(const char *filename) {
+	Uint8 *pixels = read_from_canvas();
+	if (pixels == NULL) {
+		printf("Failed to read pixels from canvas.\n");
+		return;
+	}
+	int result = stbi_write_png(filename, Canv.W - 100, Canv.H, CHANNEL_NUM, pixels, (Canv.W - 100) * CHANNEL_NUM);
+	if (result) {
+		printf("Saved canvas to %s\n", filename);
+	} else {
+		printf("Failed to save canvas to %s\n", filename);
+	}
+	free(pixels);
+}
 
 void key_input(SDL_Event event) {
 	if (event.type == SDL_EVENT_KEY_DOWN) {
@@ -31,6 +71,9 @@ void key_input(SDL_Event event) {
 				break;
 			case SDLK_E:
 				C.Held = ERASER;
+				break;
+			case SDLK_S:
+				save_canvas("output.png");
 				break;
 		}
 	}	
