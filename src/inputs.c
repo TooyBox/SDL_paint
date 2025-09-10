@@ -28,14 +28,14 @@ void mouse_input(SDL_Event event) {
 Uint8 *read_from_canvas() {
 	int x = 100, y = 0, i = 0, j = 1, w = 2;
 
-	Uint8 *pixels = malloc(sizeof(Uint8) * CHANNEL_NUM * Canv.W * Canv.H);
+	Uint8 *pixels = malloc(sizeof(Uint8) * CHANNEL_NUM * (Canv.W + 100) * Canv.H);
 	if (pixels == NULL) {
 		printf("Failed to allocate memory for reading canvas pixels.\n");
 		return NULL;
 	}
 
 	for (y = 0; y < Canv.H; y++) {
-		for (x = 100; x < Canv.W; x++) {
+		for (x = 100; x < (Canv.W + 100); x++) {
 			SDL_ReadSurfacePixel(USR_Canvas, \
 					x, y, \
 					&pixels[i], \
@@ -55,7 +55,7 @@ void save_canvas(const char *filename) {
 		printf("Failed to read pixels from canvas.\n");
 		return;
 	}
-	int result = stbi_write_png(filename, Canv.W - 100, Canv.H, CHANNEL_NUM, pixels, (Canv.W - 100) * CHANNEL_NUM);
+	int result = stbi_write_png(filename, Canv.W, Canv.H, CHANNEL_NUM, pixels, Canv.W * CHANNEL_NUM);
 	if (result) {
 		printf("Saved canvas to %s\n", filename);
 	} else {
