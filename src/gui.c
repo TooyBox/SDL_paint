@@ -11,7 +11,6 @@ GUI create_gui_element(char * name, int x, int y, int width, int height, Uint32 
 	return g;
 }
 
-
 /* Located at x = (10, 90), y = (190, 400)*/
 void GUI_color_picker(Uint8 vals[3]) {
 	double r = 255.0, g = 255.0, b = 255.0;

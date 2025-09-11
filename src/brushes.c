@@ -1,6 +1,21 @@
 #include <include/brushes.h>
 #include <include/draw_functions.h>
 
+/* maybe change how input processed;
+issue with drawing monitors and actual mouse position
+causing improper lines to be drawn.
+
+how to handle the issue???
+
+counts actual mouse position as previous for line
+therefore unable to draw properly
+
+os switches between tablet position and last actual mouse pos...
+*/
+
+
+/* try checking SDL_TOUCH_MOUSEID/SDL_PEN_MOUSEID */
+/* maybe check SDL_MouseID */
 void brush(SDL_Event event, Point cursor) {
 	static bool is_prev = false;
 	static Point prev;

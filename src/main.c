@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <windows.h>
 
 void init_window(const char *name, int w, int h) {
 	SDL_Init(SDL_INIT_VIDEO);
@@ -17,6 +18,8 @@ void init_window(const char *name, int w, int h) {
 }
 
 int main(void) {
+	FreeConsole();
+
 	init_window("Bob", Width, Height);
 	init_GUI();
 

@@ -1,3 +1,5 @@
+#pragma comment(linker, "/SUBSYSTEM:WINDOWS /ENTRY:SDL_Paint")
+
 CC=gcc
 CFLAGS= -Wall -pedantic -Wextra -std=c99
 CPPFLAGS= -g
@@ -41,4 +43,4 @@ $(BUILD_DIR)\brushes.o : brushes.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c brushes.c -o $(BUILD_DIR)\brushes.o $(INCLUDE)
 
 $(BUILD_DIR)\draw_functions.o : draw_functions.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c draw_functions.c -o $(BUILD_DIR)\draw_functions.o $(INCLUDE)
+	$(CC) -mwindows $(CFLAGS) $(CPPFLAGS) -c draw_functions.c -o $(BUILD_DIR)\draw_functions.o $(INCLUDE)
