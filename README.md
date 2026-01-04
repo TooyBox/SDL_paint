@@ -2,13 +2,7 @@ Version v0.0.1-beta 2.23.2025
 
 # **Requirements to run:**
 
-  - MSYS2 installed
-  
-  - SDL3 installed in MSYS2 environment
-
-  - Ensure SDL3 installs in /usr using DESTDIR=/usr
-
-  - Run via ./main.exe in MSYS2 terminal.
+  - To be updated
   
 # **Interactions:**
 
